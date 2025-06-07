@@ -4,8 +4,8 @@ import hmac
 import hashlib
 
 # Replace with your Bybit API credentials
-API_KEY = 'your_api_key_here'
-API_SECRET = 'your_api_secret_here'
+API_KEY = 'F8pzB34lP6PvReF7Q8'
+API_SECRET = 'dlfmBMFWp2FRkVPnDLp6U5wM6Ox4PZXPWtRD'
 
 def get_trxusdt_position():
     url = 'https://api.bybit.com/v5/position/list'
