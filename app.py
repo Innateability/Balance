@@ -1,26 +1,31 @@
+from flask import Flask, jsonify
 import requests
 import time
 import hmac
 import hashlib
+import os
 
-# Replace with your Bybit API credentials
-API_KEY = 'F8pzB34lP6PvReF7Q8'
-API_SECRET = 'dlfmBMFWp2FRkVPnDLp6U5wM6Ox4PZXPWtRD'
+app = Flask(__name__)
 
+API_KEY = os.environ.get('BYBIT_API_KEY')
+API_SECRET = os.environ.get('BYBIT_API_SECRET')
+
+@app.route('/')
+def home():
+    return "Bybit TRXUSDT Position Web Service"
+
+@app.route('/position')
 def get_trxusdt_position():
     url = 'https://api.bybit.com/v5/position/list'
 
-    # Query params
     params = {
-        'category': 'linear',         # 'linear' for USDT perpetual
+        'category': 'linear',
         'symbol': 'TRXUSDT'
     }
 
-    # Prepare signature
     timestamp = str(int(time.time() * 1000))
     recv_window = '5000'
     query_string = f"category=linear&symbol=TRXUSDT"
-
     to_sign = timestamp + API_KEY + recv_window + query_string
     signature = hmac.new(
         API_SECRET.encode('utf-8'),
@@ -42,17 +47,13 @@ def get_trxusdt_position():
         try:
             positions = data['result']['list']
             if not positions:
-                print("No open position for TRXUSDT.")
-                return 0
+                return jsonify({"contracts": 0, "message": "No open position."})
             size = float(positions[0]['size'])
-            print(f"Open TRXUSDT contracts: {size}")
-            return size
+            return jsonify({"contracts": size})
         except Exception as e:
-            print("Error parsing response:", e)
+            return jsonify({"error": "Parsing error", "details": str(e)})
     else:
-        print("API error:", response.status_code, response.text)
+        return jsonify({"error": "API call failed", "details": response.text})
 
-    return 0
-
-# Run it
-get_trxusdt_position(
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
